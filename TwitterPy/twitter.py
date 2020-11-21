@@ -7,6 +7,8 @@ import numpy as np
 import random
 import io
 
+import csv
+
 ###############################################
 # Model Version
 ###############################################
@@ -16,7 +18,15 @@ model_name = f"model {model_version}"
 ###############################################
 # Prepare The Data
 ###############################################
-text = open("tweets.txt", encoding="utf-8").read().lower()
+# Read in tweets from a text file
+# text = open("tweets.txt", encoding="utf-8").read().lower()
+
+# Read in as new CSV format
+text = ""
+with open ("test2.csv", newline="\n", encoding="utf-8") as CsvFile:
+    reader = csv.reader(CsvFile, delimiter=",")
+    for row in reader:
+        text = text + row[1]
 
 text = text.replace("\n", " ")
 print("Length: ", len(text))
@@ -51,10 +61,10 @@ model = keras.Sequential(
     [
         keras.Input(shape=(maxlen, len(chars))),
         layers.LSTM(128, return_sequences=True),
+        layers.LSTM(128, return_sequences=True),
         layers.Dropout(0.2),
-        layers.LSTM(64, return_sequences=True),
-        layers.Dropout(0.2),
-        layers.LSTM(32),
+        layers.LSTM(128, return_sequences=True),
+        layers.LSTM(128),
         layers.Dense(len(chars), activation="softmax")
     ]
 )
