@@ -6,6 +6,7 @@ from tensorflow.keras import layers
 import numpy as np
 import random
 import io
+import ast
 
 import csv
 
@@ -23,12 +24,12 @@ model_name = f"model {model_version}"
 
 # Read in as new CSV format
 text = ""
-with open ("test2.csv", newline="\n", encoding="utf-8") as CsvFile:
+with open ("test2.csv", newline="\n") as CsvFile:
     reader = csv.reader(CsvFile, delimiter=",")
     for row in reader:
-        text = text + row[1]
+        binary_tweet = ast.literal_eval(row[1])
+        text = text + binary_tweet.decode('utf-8')
 
-text = text.replace("\n", " ")
 print("Length: ", len(text))
 
 chars = sorted(list(set(text)))
