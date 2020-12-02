@@ -1,10 +1,5 @@
-import mysql.connector
-
-mydb = mysql.connector.connect(
-  host="",
-  user="",
-  password=""
-)
+# Make a copy of this file called connections.py and save it with your Twitter
+# API info below.
 
 consumer_key=""
 consumer_secret=""
