@@ -40,7 +40,7 @@ def build_model():
 # high temperature = more creative generation
 # too high of a temperature = gibberish
 ###############################################
-def sample(predictions, temperature=0.5):
+def sample(predictions, temperature=1.0):
     predictions = np.asarray(predictions).astype("float64")
     predictions = np.log(predictions) / temperature
     exp_predictions = np.exp(predictions)
@@ -64,32 +64,6 @@ def train_model(model, num_epochs, should_save_model=False, model_save_name=""):
         print("Not saving model\n")
 
     return model
-
-
-def generate_tweet(model, seed, tweet_length, post_to_twitter=False):
-    diversity = 1.0
-
-    generated_tweet = ""
-    print("Generating Tweet based on: " + seed)
-
-    for i in range(tweet_length):
-        prediction = np.zeros((1, tweet_sequence_length, len(chars)))
-        for t, char in enumerate(seed):
-            prediction[0, t, chars_mapped_to_indicies[char]] = 1.0
-        predictions = model.predict(prediction, verbose=0)[0]
-        next_index = sample(predictions, diversity)
-        next_char = indicies_mapped_to_chars[next_index]
-        seed = seed[1:] + next_char
-        generated_tweet += next_char
-
-    print(generated_tweet + "\n")
-    
-    if (post_to_twitter):
-        print("Posting Tweet...")
-        twitter.post_tweet(generated_tweet)
-        print("Tweet posted!\n")
-
-    return generated_tweet
 
 
 def get_tweets_from_csv(csv_file_name):
@@ -128,31 +102,60 @@ def set_inputs_and_labels(tweets):
     print("Inputs and labels set!\n")
 
 
+def startup(tweets_csv):
+    global tweets
+    global chars
+    global chars_mapped_to_indicies
+    global indicies_mapped_to_chars
+    
+    tweets = get_tweets_from_csv(tweets_csv)
+
+    chars = sorted(list(set(tweets)))
+    chars_mapped_to_indicies = dict((c, i) for i, c in enumerate(chars))
+    indicies_mapped_to_chars = dict((i, c) for i, c in enumerate(chars))
+    
+    set_inputs_and_labels(tweets)
+    
+    
+def build_train_save_model(tweets_csv, model_save_filename):
+    startup(tweets_csv)
+    model = build_model()
+    model = train_model(model, 250, True, model_save_filename)
+    
+    
+def generate_tweet(tweets_csv, model_file_name, seed, tweet_length, post_to_twitter=False):
+    startup(tweets_csv)
+    model = keras.models.load_model(model_file_name, compile=False)
+    diversity = 1.0
+
+    generated_tweet = ""
+    print("Generating Tweet based on: " + seed)
+
+    for i in range(tweet_length):
+        prediction = np.zeros((1, tweet_sequence_length, len(chars)))
+        for t, char in enumerate(seed):
+            prediction[0, t, chars_mapped_to_indicies[char]] = 1.0
+        predictions = model.predict(prediction, verbose=0)[0]
+        next_index = sample(predictions, diversity)
+        next_char = indicies_mapped_to_chars[next_index]
+        seed = seed[1:] + next_char
+        generated_tweet += next_char
+
+    print(generated_tweet + "\n")
+    
+    if (post_to_twitter):
+        print("Posting Tweet...")
+        twitter.post_tweet(generated_tweet)
+        print("Tweet posted!\n")
+
+    return generated_tweet
 
 
+tweets = None
 inputs = None
 labels = None
 chars = None
 chars_mapped_to_indicies = None
 indicies_mapped_to_chars = None
 tweet_sequence_length = 40
-
-#####
-# MUST DO THIS BEFORE ANYTHING ELSE
-#####
-tweets = get_tweets_from_csv("tweets.csv")
-
-chars = sorted(list(set(tweets)))
-chars_mapped_to_indicies = dict((c, i) for i, c in enumerate(chars))
-indicies_mapped_to_chars = dict((i, c) for i, c in enumerate(chars))
-
-set_inputs_and_labels(tweets)
-#####
-# END STUFF YOU MUST DO FIRST
-#####
-
-#model = build_model()
-#model = train_model(model, 1)
-model = keras.models.load_model("my_model3.h5", compile=False)
-
-generate_tweet(model, "COVID", 280)
+np.seterr(divide = 'ignore')
