@@ -2,6 +2,12 @@ import tweet_generator as generator
 import twitter_controller as twitter
 
 
+###########################################################
+# Command line interface for the Tweet generator program. #
+# by John Chittam and Andrew Young                        #
+###########################################################
+
+
 def is_string_empty(some_string):
     if some_string.strip() == "":
         return True

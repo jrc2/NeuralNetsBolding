@@ -3,6 +3,14 @@ import csv
 import re
 from datetime import datetime, timedelta
 import connections
+
+
+###############################################
+# Controls interactions with the Twitter API. #
+# Make sure you have Twitter API credentials  #
+# saved in connections.py                     #
+###############################################
+
     
 def write_tweets_to_csv(file_name, found_tweets):
     with open(file_name, 'a+') as f:

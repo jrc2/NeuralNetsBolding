@@ -9,6 +9,13 @@ import csv
 import twitter_controller as twitter
 
 
+####################################################
+# Tweet generator by John Chittam and Andrew Young #
+# Run command_line.py for a command line interface #
+# to this program.                                 #
+####################################################
+
+
 def build_model():
     print("Building model...")
     model = keras.Sequential()
@@ -29,17 +36,6 @@ def build_model():
     return model
   
 
-###############################################
-# Prepare the text sampling function
-# We don't want the next character to be the one with the highest probability
-# Because then  we"ll get the same results every time
-# So, we sample with a temperature parameter
-#
-# Temperature helps us not get the same text generate every time
-# low temperature = text similar to trained data
-# high temperature = more creative generation
-# too high of a temperature = gibberish
-###############################################
 def sample(predictions, temperature=1.0):
     predictions = np.asarray(predictions).astype("float64")
     predictions = np.log(predictions) / temperature
@@ -130,6 +126,8 @@ def generate_tweet(tweets_csv, model_file_name, seed, tweet_length, post_to_twit
 
     generated_tweet = ""
     print("Generating Tweet based on: " + seed)
+    
+    seed = seed.ljust(tweet_sequence_length)
 
     for i in range(tweet_length):
         prediction = np.zeros((1, tweet_sequence_length, len(chars)))
